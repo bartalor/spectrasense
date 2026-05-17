@@ -5,9 +5,9 @@ Supports two on-disk layouts:
   fc32 : interleaved float32  (I0 Q0 I1 Q1 ...), already in [-1, 1] convention
   sc16 : interleaved int16    (I0 Q0 I1 Q1 ...), full-scale int16 -> divide by 32768
 
-Sample rate and center frequency are *explicit* arguments. The reader will
-not guess them from the filename and will not read a SigMF .sigmf-meta
-sidecar for you; callers pass what they know.
+Use open_capture() when you know the format and rate explicitly (raw .iq /
+.bin files). Use open_sigmf() to load a .sigmf-data file with its sidecar
+.sigmf-meta — dtype, sample rate, and center frequency come from the meta.
 
 Large files are accessed via numpy.memmap so we never pull the whole capture
 into RAM. read_chunks() yields complex64 arrays of a requested length.
@@ -15,6 +15,7 @@ into RAM. read_chunks() yields complex64 arrays of a requested length.
 
 from __future__ import annotations
 
+import json
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterator, Literal
@@ -26,6 +27,12 @@ Dtype = Literal["fc32", "sc16"]
 _BYTES_PER_SAMPLE: dict[Dtype, int] = {
     "fc32": 8,   # 2 * float32
     "sc16": 4,   # 2 * int16
+}
+
+# SigMF core:datatype string -> our Dtype.
+_SIGMF_DTYPE: dict[str, Dtype] = {
+    "ci16_le": "sc16",
+    "cf32_le": "fc32",
 }
 
 
@@ -68,6 +75,32 @@ def open_capture(
     if sample_rate <= 0:
         raise ValueError(f"sample_rate must be positive, got {sample_rate}")
     return IQCapture(path=p, dtype=dtype, sample_rate=float(sample_rate), center_freq=float(center_freq))
+
+
+def open_sigmf(path: str | Path) -> IQCapture:
+    """Open a SigMF capture (.sigmf-data) using its .sigmf-meta sidecar.
+
+    Reads dtype, sample rate, and center frequency from the meta JSON.
+    """
+    data_path = Path(path)
+    meta_path = data_path.with_suffix(".sigmf-meta")
+    if not data_path.is_file():
+        raise FileNotFoundError(data_path)
+    if not meta_path.is_file():
+        raise FileNotFoundError(f"missing SigMF sidecar: {meta_path}")
+
+    meta = json.loads(meta_path.read_text())
+    g = meta["global"]
+    caps = meta.get("captures", [{}])
+    sigmf_dtype = g["core:datatype"]
+    if sigmf_dtype not in _SIGMF_DTYPE:
+        raise ValueError(f"unsupported SigMF datatype {sigmf_dtype!r}")
+    return IQCapture(
+        path=data_path,
+        dtype=_SIGMF_DTYPE[sigmf_dtype],
+        sample_rate=float(g["core:sample_rate"]),
+        center_freq=float(caps[0].get("core:frequency", 0.0)),
+    )
 
 
 def read_chunks(

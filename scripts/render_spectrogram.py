@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
-"""Render a spectrogram PNG from an I/Q capture and print resolution numbers.
+"""Render a spectrogram PNG from a SigMF I/Q capture and print resolution numbers.
+
+dtype, sample rate, and center frequency are read from the .sigmf-meta sidecar.
 
 Usage:
-  render_spectrogram.py PATH --dtype {fc32,sc16} --rate HZ --center HZ \
+  render_spectrogram.py PATH.sigmf-data \
       [--nperseg N] [--overlap N] [--window NAME] \
       [--max-seconds S] [--out PNG]
 """
@@ -27,10 +29,7 @@ from spectrasense import iq_reader, spectrogram  # noqa: E402
 
 def parse_args() -> argparse.Namespace:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("path", type=Path)
-    ap.add_argument("--dtype", required=True, choices=["fc32", "sc16"])
-    ap.add_argument("--rate", required=True, type=float, help="sample rate in Hz")
-    ap.add_argument("--center", required=True, type=float, help="center frequency in Hz")
+    ap.add_argument("path", type=Path, help="path to a .sigmf-data file")
     ap.add_argument("--nperseg", type=int, default=2048)
     ap.add_argument("--overlap", type=int, default=1024)
     ap.add_argument("--window", default="hann")
@@ -43,7 +42,7 @@ def parse_args() -> argparse.Namespace:
 def main() -> int:
     args = parse_args()
 
-    cap = iq_reader.open_capture(args.path, args.dtype, args.rate, args.center)
+    cap = iq_reader.open_sigmf(args.path)
     params = spectrogram.SpectrogramParams(
         nperseg=args.nperseg, noverlap=args.overlap, window=args.window
     )
