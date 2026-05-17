@@ -1,4 +1,4 @@
-"""Download and verify public I/Q sample captures declared in samples.toml.
+"""Download and verify public I/Q captures declared in captures.toml.
 
 The TOML file is the single source of truth for what to fetch and what
 parameters belong to each capture. This module just reads it and downloads.
@@ -20,11 +20,11 @@ from pathlib import Path
 from typing import Iterable
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-DEFAULT_TOML = REPO_ROOT / "samples.toml"
+DEFAULT_TOML = REPO_ROOT / "captures.toml"
 
 
 @dataclass(frozen=True)
-class Sample:
+class Capture:
     key: str
     description: str
     data_url: str
@@ -38,15 +38,15 @@ class Sample:
     license: str | None
 
 
-def load_samples(toml_path: Path) -> list[Sample]:
+def load_captures(toml_path: Path) -> list[Capture]:
     with toml_path.open("rb") as f:
         doc = tomllib.load(f)
-    out: list[Sample] = []
+    out: list[Capture] = []
     for key, t in doc.items():
         if not isinstance(t, dict):
             continue
         out.append(
-            Sample(
+            Capture(
                 key=key,
                 description=t.get("description", ""),
                 data_url=t["data_url"],
@@ -87,52 +87,52 @@ def _sha512(path: Path) -> str:
     return h.hexdigest()
 
 
-def fetch_one(sample: Sample) -> None:
-    print(f"[{sample.key}] {sample.description}")
-    if sample.meta_url and sample.meta_dest and not sample.meta_dest.exists():
-        print(f"  fetching meta: {sample.meta_url}")
-        _download(sample.meta_url, sample.meta_dest)
+def fetch_one(capture: Capture) -> None:
+    print(f"[{capture.key}] {capture.description}")
+    if capture.meta_url and capture.meta_dest and not capture.meta_dest.exists():
+        print(f"  fetching meta: {capture.meta_url}")
+        _download(capture.meta_url, capture.meta_dest)
 
-    if sample.dest.exists():
-        print(f"  data already present: {sample.dest.relative_to(REPO_ROOT)}")
+    if capture.dest.exists():
+        print(f"  data already present: {capture.dest.relative_to(REPO_ROOT)}")
     else:
-        print(f"  fetching data: {sample.data_url}")
-        _download(sample.data_url, sample.dest)
+        print(f"  fetching data: {capture.data_url}")
+        _download(capture.data_url, capture.dest)
 
-    if sample.sha512:
+    if capture.sha512:
         print("  verifying SHA-512 ...")
-        actual = _sha512(sample.dest)
-        if actual != sample.sha512:
-            sample.dest.unlink(missing_ok=True)
+        actual = _sha512(capture.dest)
+        if actual != capture.sha512:
+            capture.dest.unlink(missing_ok=True)
             raise SystemExit(
-                f"  SHA-512 mismatch for {sample.dest}:\n"
-                f"    expected: {sample.sha512}\n"
+                f"  SHA-512 mismatch for {capture.dest}:\n"
+                f"    expected: {capture.sha512}\n"
                 f"    actual:   {actual}\n"
                 f"  file removed; re-run to retry"
             )
         print("  ok")
     else:
-        print("  (no sha512 in samples.toml; skipping verification)")
+        print("  (no sha512 in captures.toml; skipping verification)")
 
 
 def main(argv: Iterable[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("keys", nargs="*", help="sample keys to fetch (default: all)")
+    ap.add_argument("keys", nargs="*", help="capture keys to fetch (default: all)")
     ap.add_argument("--toml", type=Path, default=DEFAULT_TOML)
     args = ap.parse_args(argv)
 
-    samples = load_samples(args.toml)
+    captures = load_captures(args.toml)
     if args.keys:
         wanted = set(args.keys)
-        unknown = wanted - {s.key for s in samples}
+        unknown = wanted - {c.key for c in captures}
         if unknown:
-            print(f"unknown sample keys: {sorted(unknown)}", file=sys.stderr)
-            print(f"available: {[s.key for s in samples]}", file=sys.stderr)
+            print(f"unknown capture keys: {sorted(unknown)}", file=sys.stderr)
+            print(f"available: {[c.key for c in captures]}", file=sys.stderr)
             return 2
-        samples = [s for s in samples if s.key in wanted]
+        captures = [c for c in captures if c.key in wanted]
 
-    for s in samples:
-        fetch_one(s)
+    for c in captures:
+        fetch_one(c)
     return 0
 
 
