@@ -1,0 +1,21 @@
+# Large I/Q captures — re-fetched via scripts/fetch_samples.sh
+data/lte/*.sigmf-data
+data/sigmf/*.sigmf-data
+
+# Generated artifacts (spectrogram PNGs etc.)
+artifacts/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Editor
+.vscode/
+.idea/
+*.swp
+.DS_Store

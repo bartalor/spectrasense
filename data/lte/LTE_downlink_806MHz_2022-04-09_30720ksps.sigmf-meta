@@ -1,0 +1,28 @@
+{
+    "global": {
+        "core:author": "Daniel Est\u00e9vez <daniel@destevez.net>",
+        "core:datatype": "ci16_le",
+        "core:description": "Recording of the LTE downlink signal of the Vodafone PCI 380 cell at Movistar Plus+ headquarters (10 MHz B20 channel)",
+        "core:geolocation": {
+            "coordinates": [
+                -3.69678,
+                40.598363
+            ],
+            "type": "Point"
+        },
+        "core:hw": "USRP B205mini",
+        "core:license": "https://creativecommons.org/licenses/by/4.0/",
+        "core:recorder": "GNU Radio 3.9",
+        "core:sample_rate": 30720000,
+        "core:sha512": "0beac70c602caa65765bdbad8cafaf8ede7392106322a96188c4b3f48b4167ecc8e4e9414bf09af8058b9d8ce8919c413d570ef1e9d8c4d4507dfdc903ebf836",
+        "core:version": "1.0.1"
+    },
+    "captures": [
+        {
+            "core:datetime": "2022-04-09T11:09:33.123597",
+            "core:frequency": 806000000,
+            "core:sample_start": 0
+        }
+    ],
+    "annotations": []
+}
