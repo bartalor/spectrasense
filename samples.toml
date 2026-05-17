@@ -1,0 +1,28 @@
+# Public I/Q sample captures used by this project.
+# Each table is one capture. Fields are consumed by src/spectrasense/fetch.py.
+#
+# Required:
+#   data_url       direct URL to the raw I/Q file
+#   dest           path relative to repo root where the file is written
+#   dtype          "fc32" or "sc16" (matches iq_reader.Dtype)
+#   sample_rate_hz integer samples/sec
+#   center_freq_hz integer RF center frequency
+#
+# Optional:
+#   meta_url       SigMF .sigmf-meta sidecar, if any
+#   meta_dest      where to write the meta file
+#   sha512         expected SHA-512 of the data file (hex); verified if present
+#   description    human-readable
+#   license        upstream license, for attribution
+
+[lte_b20_806mhz]
+description    = "Daniel Estevez LTE B20 downlink @ 806 MHz, 10 MHz channel. Vodafone primary PCI 380 (adjacent cells 378, 379)."
+license        = "CC-BY-4.0"
+data_url       = "http://eala.destevez.net/~daniel/LTE/LTE_downlink_806MHz_2022-04-09_30720ksps.sigmf-data"
+meta_url       = "http://eala.destevez.net/~daniel/LTE/LTE_downlink_806MHz_2022-04-09_30720ksps.sigmf-meta"
+dest           = "data/lte/LTE_downlink_806MHz_2022-04-09_30720ksps.sigmf-data"
+meta_dest      = "data/lte/LTE_downlink_806MHz_2022-04-09_30720ksps.sigmf-meta"
+dtype          = "sc16"
+sample_rate_hz = 30720000
+center_freq_hz = 806000000
+sha512         = "0beac70c602caa65765bdbad8cafaf8ede7392106322a96188c4b3f48b4167ecc8e4e9414bf09af8058b9d8ce8919c413d570ef1e9d8c4d4507dfdc903ebf836"

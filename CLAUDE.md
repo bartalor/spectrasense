@@ -15,8 +15,7 @@ project owns that. Keep it on the RF/spectrum side.
 - No hardware. Input is always recorded I/Q files. Support at least
   complex float32 (fc32) and interleaved int16 (sc16); make the format
   and sample rate explicit inputs, never silently assumed.
-- Python for everything (NumPy / SciPy for DSP). Bash for orchestration.
-  SQLite via plain SQL, no ORM.
+- Use whatever language/tool is best for each job. SQLite for storage.
 - Lean on libraries for the DSP primitives (FFT, windowing). The point is to
   design the detection/analysis pipeline and reason about RF, not to
   reimplement an FFT.
@@ -37,8 +36,8 @@ project owns that. Keep it on the RF/spectrum side.
 5. Storage — SQLite. Tables at minimum: captures, detections (per signal, per
    time window), anomalies. Real indexes (frequency, timestamp, capture_id).
    Hand-written analysis queries with joins.
-6. Orchestration — Bash scripts: run the pipeline over a set of capture
-   files, produce baseline, run a scenario, collect artifacts.
+6. Orchestration — run the pipeline over a set of capture files, produce
+   baseline, run a scenario, collect artifacts.
 
 ## Scope — LTE-awareness layer (expected, bounded)
 7. Given a candidate LTE band / channel bandwidth, check whether a detected
