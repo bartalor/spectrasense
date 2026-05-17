@@ -65,26 +65,18 @@ def load_samples(toml_path: Path) -> list[Sample]:
 
 def _download(url: str, dest: Path) -> None:
     dest.parent.mkdir(parents=True, exist_ok=True)
-    tmp = dest.with_suffix(dest.suffix + ".part")
-    with urllib.request.urlopen(url) as resp, tmp.open("wb") as out:
-        total = resp.headers.get("Content-Length")
-        total_int = int(total) if total else None
-        read = 0
-        chunk = 1 << 20
-        while True:
-            buf = resp.read(chunk)
-            if not buf:
-                break
-            out.write(buf)
-            read += len(buf)
-            if total_int:
-                pct = 100.0 * read / total_int
-                print(f"\r  {dest.name}: {read/1e6:7.1f} / {total_int/1e6:.1f} MB ({pct:5.1f}%)",
-                      end="", flush=True)
-            else:
-                print(f"\r  {dest.name}: {read/1e6:7.1f} MB", end="", flush=True)
+
+    def hook(n: int, bs: int, total: int) -> None:
+        read = n * bs
+        if total > 0:
+            pct = min(100.0, 100.0 * read / total)
+            print(f"\r  {dest.name}: {read/1e6:7.1f} / {total/1e6:.1f} MB ({pct:5.1f}%)",
+                  end="", flush=True)
+        else:
+            print(f"\r  {dest.name}: {read/1e6:7.1f} MB", end="", flush=True)
+
+    urllib.request.urlretrieve(url, dest, reporthook=hook)
     print()
-    tmp.replace(dest)
 
 
 def _sha512(path: Path) -> str:
