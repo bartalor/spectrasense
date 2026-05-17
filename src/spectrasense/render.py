@@ -1,10 +1,9 @@
-#!/usr/bin/env python3
 """Render a spectrogram PNG from a SigMF I/Q capture and print resolution numbers.
 
 dtype, sample rate, and center frequency are read from the .sigmf-meta sidecar.
 
 Usage:
-  render_spectrogram.py PATH.sigmf-data \
+  python3 -m spectrasense.render PATH.sigmf-data \
       [--nperseg N] [--overlap N] [--window NAME] \
       [--max-seconds S] [--out PNG]
 """
@@ -12,19 +11,13 @@ Usage:
 from __future__ import annotations
 
 import argparse
-import sys
 from pathlib import Path
 
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
-import numpy as np
 
-# allow running as `python3 scripts/render_spectrogram.py` without install
-ROOT = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(ROOT / "src"))
-
-from spectrasense import iq_reader, spectrogram  # noqa: E402
+from . import iq_reader, spectrogram
 
 
 def parse_args() -> argparse.Namespace:

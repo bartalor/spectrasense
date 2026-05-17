@@ -1,4 +1,4 @@
-# Large I/Q captures — re-fetched via scripts/fetch_samples.sh
+# Large I/Q captures — re-fetched via `python3 -m spectrasense.fetch`
 data/lte/*.sigmf-data
 data/sigmf/*.sigmf-data
 
@@ -8,6 +8,7 @@ artifacts/
 # Python
 __pycache__/
 *.py[cod]
+*.egg-info/
 .venv/
 venv/
 .pytest_cache/
